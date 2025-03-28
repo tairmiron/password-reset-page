@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,9 +38,9 @@
     }
 
     label {
-      font-size: 16px;
-      color: #555;
       display: block;
+      font-size: 14px;
+      color: #555;
       margin-bottom: 5px;
     }
 
@@ -50,9 +50,7 @@
       font-size: 16px;
       border: 1px solid #ddd;
       border-radius: 5px;
-      margin-bottom: 10px;
       box-sizing: border-box;
-      text-align: right;
     }
 
     input[type="password"]:focus {
@@ -67,7 +65,7 @@
       color: white;
       border: none;
       border-radius: 5px;
-      font-size: 18px;
+      font-size: 16px;
       cursor: pointer;
     }
 
@@ -104,34 +102,45 @@
 </div>
 
 <script>
-  document.getElementById('reset-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
+  document.addEventListener("DOMContentLoaded", function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
 
-    const newPassword = document.getElementById('new-password').value;
-    const confirmPassword = document.getElementById('confirm-password').value;
+    document.getElementById('reset-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
 
-    if (newPassword !== confirmPassword) {
-      document.getElementById('error-message').innerText = 'הסיסמאות אינן תואמות!';
-      return;
-    }
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
 
-    const token = "YOUR_RESET_TOKEN_HERE"; 
+      if (newPassword !== confirmPassword) {
+        document.getElementById('error-message').innerText = 'הסיסמאות אינן תואמות!';
+        return;
+      }
 
-    const response = await fetch('http://localhost:5000/auth/reset-password', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ token, newPassword }),
+      if (!token) {
+        alert('קישור האיפוס אינו תקין!');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:5000/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, newPassword })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert('הסיסמה שונתה בהצלחה!');
+          window.location.href = "https://tairmiron.github.io"; // שינוי לכתובת הרצויה
+        } else {
+          document.getElementById('error-message').innerText = 'שגיאה: ' + result.message;
+        }
+      } catch (error) {
+        document.getElementById('error-message').innerText = 'שגיאה בהתחברות לשרת';
+      }
     });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      alert('הסיסמה שונתה בהצלחה!');
-    } else {
-      alert('שגיאה: ' + result.message);
-    }
   });
 </script>
 
